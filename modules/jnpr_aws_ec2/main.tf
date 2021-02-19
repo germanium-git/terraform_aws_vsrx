@@ -15,19 +15,17 @@ resource "aws_eip" "eip_ge000" {
 }
 
 
-variable "vsrxcfg" {
-  type = list(map(string))
-  default = [
-    { host-name = "vsrx1"
-      port = 8080 },
-    { host-name = "vsrx2"
-      port = 8080}
-  ]
-}
-
 data "template_file" "user_data" {
   count     = 2
-  template  = templatefile("${path.module}/vsrx.tmpl", var.vsrxcfg[count.index])
+  template  = templatefile("${path.module}/vsrx.tmpl",
+  {
+    hostname = var.vsrxcfg[count.index].host-name
+    st0      = var.vsrxcfg[count.index].st0
+    neighbor = var.vsrxcfg[count.index].neighbor
+    onprem   = var.vsrxcfg[count.index].onprem
+    localid  = var.vsrxcfg[count.index].localid
+    defgw    = var.vsrxcfg[count.index].defgw
+  })
 }
 
 resource "aws_iam_instance_profile" "iam_profile" {
@@ -61,12 +59,6 @@ resource "aws_instance" "vsrx" {
   tags = {
     Name = "vsrx-${count.index}-${var.vpc_name}"
   }
-
-
-  /*provisioner "local-exec" {
-    command = "sh ${path.module}/files/wait-for-instance-ok.sh ${var.aws_region} ${aws_eip.default.*.public_ip[count.index]} ${self.id}"
-  }
-      */
 }
 
 resource "aws_eip_association" "eip_assoc_ge000" {

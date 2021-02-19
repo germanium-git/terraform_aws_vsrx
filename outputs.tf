@@ -22,3 +22,7 @@ output "key_id" {
 output "key_name" {
   value = module.key.key_name
 }
+
+output "config_vsrx" {
+  value = module.jnpr_aws_ec2.config_vsrx
+}

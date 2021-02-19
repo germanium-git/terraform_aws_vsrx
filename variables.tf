@@ -83,3 +83,23 @@ variable "mymngip" {
     tvpc1 = ["131.207.242.5/32", "185.230.172.74/32"]
   }
 }
+
+variable "vsrxcfg" {
+  type = list(map(string))
+  default = [
+    { host-name = "vsrx1"
+      st0       = "169.254.43.46/30"
+      neighbor  = "169.254.43.45"
+      defgw     = "10.10.128.1"
+      onprem    = "185.230.172.74"
+      localid   = "1.2.3.4"
+    },
+    { host-name = "vsrx2"
+      st0       = "169.254.43.50/30"
+      neighbor  = "169.254.43.49"
+      defgw     = "10.10.144.1"
+      onprem    = "185.230.172.74"
+      localid   = "5.6.7.8"
+    }
+  ]
+}

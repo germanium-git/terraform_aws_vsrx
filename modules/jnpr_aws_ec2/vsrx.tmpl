@@ -47,7 +47,7 @@ groups {
 }
 apply-groups aws-default;
 system {
-    host-name vsrx1;
+    host-name ${hostname};
     syslog {
         file messages {
             any info;
@@ -70,12 +70,12 @@ security {
         }
         gateway gw-onprem {
             ike-policy aws-psk;
-            address 185.230.172.74;
+            address ${onprem};
             dead-peer-detection {
                 interval 10;
                 threshold 3;
             }
-            local-identity inet 13.49.206.184;
+            local-identity inet ${localid};
             external-interface ge-0/0/0;
         }
     }
@@ -140,9 +140,9 @@ security {
 }
 interfaces {
     ge-0/0/0 {
-        unit 0 {
-            family inet {
-                address 10.10.128.112/24;
+         unit 0 {
+             family inet {
+                 dhcp;
             }
         }
     }
@@ -150,7 +150,7 @@ interfaces {
         unit 1 {
             family inet {
                 mtu 1436;
-                address 169.254.43.46/30;
+                address ${st0};
             }
         }
     }
@@ -159,7 +159,7 @@ routing-instances {
     transit {
         routing-options {
             static {
-                route 0.0.0.0/0 next-hop 10.10.128.1;
+                route 0.0.0.0/0 next-hop ${defgw};
             }
         }
         protocols {
@@ -174,7 +174,7 @@ routing-instances {
                             minimum-interval 1000;
                         }
                     }
-                    neighbor 169.254.43.45 {
+                    neighbor ${neighbor} {
                         peer-as 65001;
                     }
                 }

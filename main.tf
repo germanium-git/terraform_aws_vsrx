@@ -25,8 +25,8 @@ module "jnpr_aws_ec2" {
   vsrx_user               = var.vsrx_user
   key_name                = module.key.key_name
   mymngip                 = var.mymngip
+  vsrxcfg                 = var.vsrxcfg
 }
-
 
 # Create SSH key
 module "key" {

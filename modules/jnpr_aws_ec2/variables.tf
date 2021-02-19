@@ -9,3 +9,4 @@ variable "interfaces_fxp0_ids" {}
 variable "interfaces_ge000_ids" {}
 variable "interfaces_ge001_ids" {}
 variable "mymngip" {}
+variable "vsrxcfg" {}
