@@ -1,0 +1,11 @@
+variable "aws_region" {}
+variable "vpc_name" {}
+variable "key_name" {}
+variable "vsrx_user" {}
+variable "jnpr_vpc_id" {}
+variable "aws_vsrx_amis" {}
+variable "vsrx_instance_types" {}
+variable "interfaces_fxp0_ids" {}
+variable "interfaces_ge000_ids" {}
+variable "interfaces_ge001_ids" {}
+variable "mymngip" {}

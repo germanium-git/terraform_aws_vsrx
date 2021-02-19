@@ -1,0 +1,190 @@
+#junos-config
+groups {
+    aws-default {
+        system {
+            root-authentication {
+                encrypted-password *disabled*; ## SECRET-DATA
+            }
+            login {
+                user ec2-user {
+                    full-name juniper-aws-ec2-user;
+                    uid 100;
+                    class super-user;
+                    authentication {
+                        ssh-rsa "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDKRP0OEAWmAxOTtUZ9beQmKm8t0sgghVAFj1QaseDbMFSprtznHXcU/EF7YWR4wgLI25xzj8aItXxbkNav0mSoHnsyBAmDi42XUCQ5j3snGmF8f8XXu0j49d8z5cBgmiRCheoIC31EtYGzu5bkiuhOOj0k5hAOVzMVgKRdcMasRRsnAQ+VRHtR1dAYRKYQQzaKUtbdfi42xgj4QlPWM0g1t8gOA/Z52hVdX564Zh5GatEQ5QFNTuA7OI4DH1B5E5zZJLNSwE+2Kyf2VZdwc/piIX3X5s1PnJ672JZOoVKwDEMgNYWXycosZBKt4hvbyC5sSiZYQbcBJ5REv9yJRNLwZ7r/Isr5kBYebZBsfOxa36XgKKvjvNGfL5JXNYcCA6nYoaqN+W4UMNjOQg37fDaUVNUxkNFJoUUaaOihYhrWr+Ak79TB7J3ej7huAyvYCZ+bjQOTLgcBinWBsHFTzrzyBtyKTxZRhwEMCpFXljwwtRWN9M7I21XcIvlcsUwNFEzFwmyYNiTg7PKFIwu+KttQXCeVf+WnAEovJe2lGpgsJTrngyeR8M1Pfe92NXe7o2CZ9hroxmULuXahWHro99/InZkobQOIBKEJ7jnppzomXapjpKtEDudQfhMLd8PXS9nnt8xv0Ldpoz9je1l37hRr6T2Ei5RLCM5cRtT2HWX/SQ== mykey"; ## SECRET-DATA
+                    }
+                }
+            }
+            services {
+                ssh {
+                    no-passwords;
+                }
+                netconf {
+                    ssh;
+                }
+                web-management {
+                    https {
+                        system-generated-certificate;
+                    }
+                }
+            }
+            license {
+                autoupdate {
+                    url https://ae1.juniper.net/junos/key_retrieval;
+                }
+            }
+        }
+        interfaces {
+            fxp0 {
+                unit 0 {
+                    family inet {
+                        dhcp;
+                    }
+                }
+            }
+        }
+    }
+}
+apply-groups aws-default;
+system {
+    host-name vsrx1;
+    syslog {
+        file messages {
+            any info;
+        }
+    }
+}
+security {
+    ike {
+        proposal psk-dh2-sha1-aes128-28800 {
+            authentication-method pre-shared-keys;
+            dh-group group2;
+            authentication-algorithm sha1;
+            encryption-algorithm aes-128-cbc;
+            lifetime-seconds 28800;
+        }
+        policy aws-psk {
+            mode main;
+            proposals psk-dh2-sha1-aes128-28800;
+            pre-shared-key ascii-text "$9$8Fx7-b24ZjikNdqfTF9CxN-V24ZUH.PQJGT39AIR2goGHmn6AuOIGD"; ## SECRET-DATA
+        }
+        gateway gw-onprem {
+            ike-policy aws-psk;
+            address 185.230.172.74;
+            dead-peer-detection {
+                interval 10;
+                threshold 3;
+            }
+            local-identity inet 13.49.206.184;
+            external-interface ge-0/0/0;
+        }
+    }
+    ipsec {
+        proposal esp-sha1-aes128-3600 {
+            protocol esp;
+            authentication-algorithm hmac-sha1-96;
+            encryption-algorithm aes-128-cbc;
+            lifetime-seconds 3600;
+        }
+        policy ipsec-pfs2 {
+            perfect-forward-secrecy {
+                keys group2;
+            }
+            proposals esp-sha1-aes128-3600;
+        }
+        vpn vpn-to-onprem-01 {
+            bind-interface st0.1;
+            df-bit clear;
+            ike {
+                gateway gw-onprem;
+                ipsec-policy ipsec-pfs2;
+            }
+            establish-tunnels immediately;
+        }
+    }
+    flow {
+        tcp-mss {
+            ipsec-vpn {
+                mss 1379;
+            }
+        }
+    }
+    zones {
+        security-zone untrust {
+            host-inbound-traffic {
+                system-services {
+                    ike;
+                }
+                protocols {
+                    bgp;
+                }
+            }
+            interfaces {
+                st0.1;
+                ge-0/0/0.0;
+            }
+        }
+    }
+    cloud {
+        aws {
+            cloudwatch {
+                log {
+                    group vsrx-group;
+                    file messages {
+                        collect-interval 1;
+                    }
+                }
+            }
+        }
+    }
+}
+interfaces {
+    ge-0/0/0 {
+        unit 0 {
+            family inet {
+                address 10.10.128.112/24;
+            }
+        }
+    }
+    st0 {
+        unit 1 {
+            family inet {
+                mtu 1436;
+                address 169.254.43.46/30;
+            }
+        }
+    }
+}
+routing-instances {
+    transit {
+        routing-options {
+            static {
+                route 0.0.0.0/0 next-hop 10.10.128.1;
+            }
+        }
+        protocols {
+            bgp {
+                group ebgp {
+                    type external;
+                    hold-time 30;
+                    bfd-liveness-detection {
+                        minimum-interval 1000;
+                        multiplier 3;
+                        transmit-interval {
+                            minimum-interval 1000;
+                        }
+                    }
+                    neighbor 169.254.43.45 {
+                        peer-as 65001;
+                    }
+                }
+            }
+        }
+        interface ge-0/0/0.0;
+        interface st0.1;
+        instance-type virtual-router;
+    }
+}
+routing-options {
+    autonomous-system 65002;
+}
