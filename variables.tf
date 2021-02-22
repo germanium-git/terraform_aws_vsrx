@@ -84,6 +84,17 @@ variable "mymngip" {
   }
 }
 
+# Sequence number of host address from subnet CIDR range
+variable "ipoffset" {
+  default = 5
+}
+
+# Network mask in prefix length format to get interfaces assigned with IP addresses and respective mask
+variable "prefixlenght" {
+  type = string
+  default = 24
+}
+
 variable "vsrxcfg" {
   type = list(map(string))
   default = [

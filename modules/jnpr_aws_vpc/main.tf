@@ -73,12 +73,12 @@ resource "aws_network_interface" "ge000" {
   subnet_id         = aws_subnet.vsrx-subnet-outside.*.id[count.index]
   security_groups   = [var.security_group_ge000_id]
   source_dest_check = false
-  private_ips       = [cidrhost(aws_subnet.vsrx-subnet-outside.*.cidr_block[count.index], 5)]
+  private_ips       = [cidrhost(aws_subnet.vsrx-subnet-outside.*.cidr_block[count.index], var.ipoffset)]
 }
 
 resource "aws_network_interface" "ge001" {
   count             = 2
   subnet_id         = aws_subnet.vsrx-subnet-inside.*.id[count.index]
   source_dest_check = false
-  private_ips       = [cidrhost(aws_subnet.vsrx-subnet-inside.*.cidr_block[count.index], 5)]
+  private_ips       = [cidrhost(aws_subnet.vsrx-subnet-inside.*.cidr_block[count.index], var.ipoffset)]
 }

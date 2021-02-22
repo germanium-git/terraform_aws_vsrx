@@ -14,7 +14,6 @@ resource "aws_eip" "eip_ge000" {
   network_interface = var.interfaces_ge000_ids[count.index]
 }
 
-
 data "template_file" "user_data" {
   count     = 2
   template  = templatefile("${path.module}/vsrx.tmpl",
@@ -25,8 +24,11 @@ data "template_file" "user_data" {
     onprem   = var.vsrxcfg[count.index].onprem
     localid  = var.vsrxcfg[count.index].localid
     defgw    = var.vsrxcfg[count.index].defgw
+    ge000    = join("",[cidrhost(var.vpc_vsrx_subnet_outside[count.index], var.ipoffset), "/", split("/", var.vpc_vsrx_subnet_outside[count.index])[1]])
+    ge001    = join("",[cidrhost(var.vpc_vsrx_subnet_inside[count.index], var.ipoffset), "/", split("/", var.vpc_vsrx_subnet_inside[count.index])[1]])
   })
 }
+
 
 resource "aws_iam_instance_profile" "iam_profile" {
   name = "test_profile"

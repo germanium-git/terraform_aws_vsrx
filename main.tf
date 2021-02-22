@@ -9,6 +9,7 @@ module "jnpr_aws_vpc" {
   vpc_vsrx_subnet_mng     = var.vpc_vsrx_subnet_mng[var.vpc_name]
   security_group_fxp0_id  = module.jnpr_aws_ec2.security_group_fxp0_id
   security_group_ge000_id = module.jnpr_aws_ec2.security_group_ge000_id
+  ipoffset                = var.ipoffset
 }
 
 # Create vSRX EC2 instances
@@ -26,6 +27,9 @@ module "jnpr_aws_ec2" {
   key_name                = module.key.key_name
   mymngip                 = var.mymngip
   vsrxcfg                 = var.vsrxcfg
+  vpc_vsrx_subnet_outside = var.vpc_vsrx_subnet_outside[var.vpc_name]
+  vpc_vsrx_subnet_inside  = var.vpc_vsrx_subnet_inside[var.vpc_name]
+  ipoffset                = var.ipoffset
 }
 
 # Create SSH key

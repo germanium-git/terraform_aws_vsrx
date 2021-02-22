@@ -10,3 +10,6 @@ variable "interfaces_ge000_ids" {}
 variable "interfaces_ge001_ids" {}
 variable "mymngip" {}
 variable "vsrxcfg" {}
+variable "vpc_vsrx_subnet_outside" {}
+variable "vpc_vsrx_subnet_inside" {}
+variable "ipoffset" {}

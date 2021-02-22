@@ -142,7 +142,14 @@ interfaces {
     ge-0/0/0 {
          unit 0 {
              family inet {
-                 dhcp;
+                 address ${ge000};
+            }
+        }
+    }
+    ge-0/0/1 {
+         unit 0 {
+             family inet {
+                 address ${ge001};
             }
         }
     }

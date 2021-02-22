@@ -14,4 +14,7 @@ variable "security_group_fxp0_id" {}
 
 variable "security_group_ge000_id" {}
 
+variable "ipoffset" {}
+
+
 
