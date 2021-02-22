@@ -102,10 +102,38 @@ security {
             establish-tunnels immediately;
         }
     }
+    address-book {
+        untrust {
+            address on-premise 172.31.1.0/24;
+            attach {
+                zone untrust;
+            }
+        }
+        trust {
+            address aws-intra 10.11.0.0/16;
+            attach {
+                zone trust;
+            }
+        }
+    }
     flow {
         tcp-mss {
             ipsec-vpn {
                 mss 1379;
+            }
+        }
+    }
+    policies {
+        from-zone untrust to-zone trust {
+            policy on-premise_to_aws {
+                match {
+                    source-address on-premise;
+                    destination-address aws-intra;
+                    application any;
+                }
+                then {
+                    permit;
+                }
             }
         }
     }
@@ -117,11 +145,23 @@ security {
                 }
                 protocols {
                     bgp;
+                    bfd;
                 }
             }
             interfaces {
                 st0.1;
                 ge-0/0/0.0;
+            }
+        }
+        security-zone trust {
+            host-inbound-traffic {
+                system-services {
+                    ping;
+                    ssh;
+                }
+            }
+            interfaces {
+                ge-0/0/1.0;
             }
         }
     }
@@ -162,11 +202,26 @@ interfaces {
         }
     }
 }
+policy-options {
+    policy-statement BGP-export {
+        term 1 {
+            from {
+                protocol static;
+                route-filter 10.11.0.0/16 exact;
+            }
+            then accept;
+        }
+        term 2 {
+            then reject;
+        }
+    }
+}
 routing-instances {
     transit {
         routing-options {
             static {
                 route 0.0.0.0/0 next-hop ${defgw};
+                route 10.11.0.0/16 next-hop ${insidenexthop};
             }
         }
         protocols {
@@ -174,6 +229,7 @@ routing-instances {
                 group ebgp {
                     type external;
                     hold-time 30;
+                    export BGP-export;
                     bfd-liveness-detection {
                         minimum-interval 1000;
                         multiplier 3;
@@ -188,6 +244,7 @@ routing-instances {
             }
         }
         interface ge-0/0/0.0;
+        interface ge-0/0/1.0;
         interface st0.1;
         instance-type virtual-router;
     }

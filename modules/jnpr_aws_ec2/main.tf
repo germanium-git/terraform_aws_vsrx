@@ -18,14 +18,15 @@ data "template_file" "user_data" {
   count     = 2
   template  = templatefile("${path.module}/vsrx.tmpl",
   {
-    hostname = var.vsrxcfg[count.index].host-name
-    st0      = var.vsrxcfg[count.index].st0
-    neighbor = var.vsrxcfg[count.index].neighbor
-    onprem   = var.vsrxcfg[count.index].onprem
-    localid  = var.vsrxcfg[count.index].localid
-    defgw    = var.vsrxcfg[count.index].defgw
-    ge000    = join("",[cidrhost(var.vpc_vsrx_subnet_outside[count.index], var.ipoffset), "/", split("/", var.vpc_vsrx_subnet_outside[count.index])[1]])
-    ge001    = join("",[cidrhost(var.vpc_vsrx_subnet_inside[count.index], var.ipoffset), "/", split("/", var.vpc_vsrx_subnet_inside[count.index])[1]])
+    hostname      = var.vsrxcfg[count.index].host-name
+    st0           = var.vsrxcfg[count.index].st0
+    neighbor      = var.vsrxcfg[count.index].neighbor
+    onprem        = var.vsrxcfg[count.index].onprem
+    localid       = var.vsrxcfg[count.index].localid
+    defgw         = var.vsrxcfg[count.index].defgw
+    ge000         = join("",[cidrhost(var.vpc_vsrx_subnet_outside[count.index], var.ipoffset), "/", split("/", var.vpc_vsrx_subnet_outside[count.index])[1]])
+    ge001         = join("",[cidrhost(var.vpc_vsrx_subnet_inside[count.index], var.ipoffset), "/", split("/", var.vpc_vsrx_subnet_inside[count.index])[1]])
+    insidenexthop = cidrhost(var.vpc_vsrx_subnet_inside[count.index], 1)
   })
 }
 
